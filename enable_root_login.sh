@@ -119,7 +119,6 @@ add_user_public_key() {
         1)
             echo
             log_info "请粘贴您的SSH公钥内容 (通常以ssh-rsa, ssh-ed25519, 或 ecdsa-sha2- 开头):"
-            echo "提示: 在本地机器运行 'cat ~/.ssh/id_rsa.pub' 或类似命令获取公钥"
             echo "输入完成后按回车，然后输入 'END' 并按回车结束输入:"
             echo
             
@@ -285,8 +284,18 @@ backup_ssh_config() {
 # 修改SSH配置
 modify_ssh_config() {
     local config_file="/etc/ssh/sshd_config"
+    local permit_root_value="yes"
     
     log_info "修改SSH配置文件..."
+    
+    # 根据配置模式决定PermitRootLogin的值
+    if [[ "$CONFIG_MODE" == "key_only" ]]; then
+        permit_root_value="prohibit-password"
+        log_info "仅密钥模式：设置PermitRootLogin为prohibit-password"
+    else
+        permit_root_value="yes"
+        log_info "密码模式：设置PermitRootLogin为yes"
+    fi
     
     # 创建临时文件
     local temp_file=$(mktemp)
@@ -294,24 +303,26 @@ modify_ssh_config() {
     # 处理PermitRootLogin配置
     if grep -q "^#*PermitRootLogin" "$config_file"; then
         # 如果存在该配置项，则修改它
-        sudo sed 's/^#*PermitRootLogin.*/PermitRootLogin yes/' "$config_file" > "$temp_file"
+        sudo sed "s/^#*PermitRootLogin.*/PermitRootLogin $permit_root_value/" "$config_file" > "$temp_file"
         sudo cp "$temp_file" "$config_file"
-        log_success "已修改PermitRootLogin为yes"
+        log_success "已修改PermitRootLogin为$permit_root_value"
     else
         # 如果不存在，则添加
-        echo "PermitRootLogin yes" | sudo tee -a "$config_file" > /dev/null
-        log_success "已添加PermitRootLogin yes配置"
+        echo "PermitRootLogin $permit_root_value" | sudo tee -a "$config_file" > /dev/null
+        log_success "已添加PermitRootLogin $permit_root_value配置"
     fi
     
-    # 处理PasswordAuthentication配置
-    if grep -q "^#*PasswordAuthentication" "$config_file"; then
-        # 如果存在该配置项，则修改它
-        sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' "$config_file"
-        log_success "已修改PasswordAuthentication为yes"
-    else
-        # 如果不存在，则添加
-        echo "PasswordAuthentication yes" | sudo tee -a "$config_file" > /dev/null
-        log_success "已添加PasswordAuthentication yes配置"
+    # 处理PasswordAuthentication配置（仅在非仅密钥模式下启用）
+    if [[ "$CONFIG_MODE" != "key_only" ]]; then
+        if grep -q "^#*PasswordAuthentication" "$config_file"; then
+            # 如果存在该配置项，则修改它
+            sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' "$config_file"
+            log_success "已修改PasswordAuthentication为yes"
+        else
+            # 如果不存在，则添加
+            echo "PasswordAuthentication yes" | sudo tee -a "$config_file" > /dev/null
+            log_success "已添加PasswordAuthentication yes配置"
+        fi
     fi
     
     # 清理临时文件
@@ -474,7 +485,7 @@ main() {
             # 对于仅密钥模式，自动禁用密码认证
             sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
             PASSWORD_AUTH_DISABLED=true
-            log_success "已禁用密码认证，仅允许密钥登录"
+            log_success "已配置仅密钥登录模式"
             ;;
         "both")
             log_info "执行完整配置..."
