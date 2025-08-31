@@ -398,38 +398,45 @@ show_connection_info() {
 
 # 显示配置选择菜单
 show_config_menu() {
-    echo -e "${BLUE}=== 配置选择 ===${NC}"
-    echo "请选择要执行的配置:"
-    echo "1) 仅配置密码登录 (基础配置)"
-    echo "2) 仅配置SSH密钥登录 (推荐) - 使用您的公钥"
-    echo "3) 同时配置密码和SSH密钥登录 (完整配置)"
-    echo "4) 退出脚本"
-    echo
-    read -p "请选择 (1-4): " config_choice
-    echo
-    
-    case $config_choice in
-        1)
-            CONFIG_MODE="password_only"
-            log_info "选择: 仅配置密码登录"
-            ;;
-        2)
-            CONFIG_MODE="key_only"
-            log_info "选择: 仅配置SSH密钥登录"
-            ;;
-        3)
-            CONFIG_MODE="both"
-            log_info "选择: 同时配置密码和SSH密钥登录"
-            ;;
-        4)
-            log_info "脚本已退出"
-            exit 0
-            ;;
-        *)
-            log_error "无效选择，默认使用完整配置"
-            CONFIG_MODE="both"
-            ;;
-    esac
+    while true; do
+        echo -e "${BLUE}=== 配置选择 ===${NC}"
+        echo "请选择要执行的配置:"
+        echo "1) 仅配置密码登录 (基础配置)"
+        echo "2) 仅配置SSH密钥登录 (推荐) - 使用您的公钥"
+        echo "3) 同时配置密码和SSH密钥登录 (完整配置)"
+        echo "4) 退出脚本"
+        echo
+        read -p "请选择 (1-4): " config_choice
+        echo
+        
+        case $config_choice in
+            1)
+                CONFIG_MODE="password_only"
+                log_info "选择: 仅配置密码登录"
+                break
+                ;;
+            2)
+                CONFIG_MODE="key_only"
+                log_info "选择: 仅配置SSH密钥登录"
+                break
+                ;;
+            3)
+                CONFIG_MODE="both"
+                log_info "选择: 同时配置密码和SSH密钥登录"
+                break
+                ;;
+            4)
+                log_info "脚本已退出"
+                exit 0
+                ;;
+            "")
+                log_warning "请输入选择项 (1-4)"
+                ;;
+            *)
+                log_error "无效选择 '$config_choice'，请输入 1-4"
+                ;;
+        esac
+    done
 }
 
 # 安全警告
