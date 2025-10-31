@@ -1,7 +1,5 @@
 # Ubuntu Root用户登录配置脚本 (增强版)
 
-基于CSDN文章 [Ubuntu 系统如何使用 root 用户登录实例](https://blog.csdn.net/thebestleo/article/details/123451471) 创建的自动化配置脚本，现已增加SSH密钥认证功能。
-
 ## 🚀 新增功能
 
 ### SSH密钥认证支持
@@ -255,28 +253,3 @@ rm -f ~/.ssh/id_*_root*
 - 公钥文件: 644 (所有者可读写，其他人可读)
 - .ssh目录: 700 (仅所有者可访问)
 - authorized_keys: 600 (仅所有者可读写)
-
-## 更新日志
-
-### v2.0 (当前版本)
-- ✅ 新增SSH密钥认证支持
-- ✅ 支持多种密钥类型(RSA/ED25519/ECDSA)
-- ✅ 添加配置选择菜单
-- ✅ 增强安全选项
-- ✅ 改进用户界面和错误处理
-
-### v1.0
-- ✅ 基础密码认证配置
-- ✅ SSH服务配置
-- ✅ 安全检查和备份
-
-## 许可证
-
-本脚本基于CSDN文章内容创建，遵循开源精神，仅供学习和研究使用。
-
-## 参考资料
-
-- [Ubuntu 系统如何使用 root 用户登录实例](https://blog.csdn.net/thebestleo/article/details/123451471)
-- [OpenSSH Server Configuration](https://www.openssh.com/manual.html)
-- [Ubuntu Server Guide - OpenSSH Server](https://ubuntu.com/server/docs/service-openssh)
-- [SSH Key Types and Security](https://security.stackexchange.com/questions/5096/rsa-vs-dsa-for-ssh-authentication-keys)
